@@ -26,11 +26,13 @@ func defaultHttpOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 		"GetCards":           {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "GetCards", logger))},
 		"GetTransaction":     {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "GetTransaction", logger))},
 		"Login":              {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Login", logger))},
+		"SignUp":             {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "SignUp", logger))},
 	}
 	return options
 }
 func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
 	mw["Login"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Login")), endpoint.InstrumentingMiddleware(duration.With("method", "Login"))}
+	mw["SignUp"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SignUp")), endpoint.InstrumentingMiddleware(duration.With("method", "SignUp"))}
 	mw["GetAllTransactions"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetAllTransactions")), endpoint.InstrumentingMiddleware(duration.With("method", "GetAllTransactions"))}
 	mw["GetTransaction"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetTransaction")), endpoint.InstrumentingMiddleware(duration.With("method", "GetTransaction"))}
 	mw["GetCards"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetCards")), endpoint.InstrumentingMiddleware(duration.With("method", "GetCards"))}
@@ -40,7 +42,7 @@ func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []s
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"Login", "GetAllTransactions", "GetTransaction", "GetCards", "EnableCard"}
+	methods := []string{"Login", "SignUp", "GetAllTransactions", "GetTransaction", "GetCards", "EnableCard"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

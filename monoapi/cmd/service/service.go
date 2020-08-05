@@ -3,12 +3,6 @@ package service
 import (
 	"flag"
 	"fmt"
-	"net"
-	http1 "net/http"
-	"os"
-	"os/signal"
-	"syscall"
-
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
@@ -20,13 +14,20 @@ import (
 	endpoint "github.com/viktormelnychuk/monoapi/monoapi/pkg/endpoint"
 	http "github.com/viktormelnychuk/monoapi/monoapi/pkg/http"
 	service "github.com/viktormelnychuk/monoapi/monoapi/pkg/service"
+	"net"
+	http1 "net/http"
+	"os"
+	"os/signal"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
+	"syscall"
 )
 
 var tracer opentracinggo.Tracer
 var logger log.Logger
 
+// Define our flags. Your service probably won't need to bind listeners for
+// all* supported transports, but we do it here for demonstration purposes.
 var fs = flag.NewFlagSet("monoapi", flag.ExitOnError)
 var debugAddr = fs.String("debug.addr", ":8080", "Debug and metrics listen address")
 var httpAddr = fs.String("http-addr", ":8081", "HTTP listen address")
@@ -35,16 +36,20 @@ var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
 var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
 var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
 var thriftFramed = fs.Bool("thrift-framed", false, "true to enable framing")
+var zipkinURL = fs.String("zipkin-url", "", "Enable Zipkin tracing via a collector URL e.g. http://localhost:9411/api/v1/spans")
 var lightstepToken = fs.String("lightstep-token", "", "Enable LightStep tracing via a LightStep access token")
 var appdashAddr = fs.String("appdash-addr", "", "Enable Appdash tracing via an Appdash server host:port")
 
 func Run() {
 	fs.Parse(os.Args[1:])
 
+	// Create a single logger, which we'll use and give to other components.
 	logger = log.NewLogfmtLogger(os.Stderr)
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 	logger = log.With(logger, "caller", log.DefaultCaller)
 
+	//  Determine which tracer to use. We'll pass the tracer to all the
+	// components that use it, as a dependency
 	if *lightstepToken != "" {
 		logger.Log("tracer", "LightStep")
 		tracer = lightsteptracergo.NewTracer(lightsteptracergo.Options{AccessToken: *lightstepToken})
@@ -69,6 +74,7 @@ func Run() {
 }
 func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options := defaultHttpOptions(logger, tracer)
+	// Add your http options here
 
 	httpHandler := http.NewHTTPHandler(endpoints, options)
 	httpListener, err := net.Listen("tcp", *httpAddr)
@@ -83,10 +89,10 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	})
 
 }
-
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
 	mw = addDefaultServiceMiddleware(logger, mw)
+	// Append your middleware here
 
 	return
 }
@@ -99,6 +105,7 @@ func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middlew
 		Subsystem: "monoapi",
 	}, []string{"method", "success"})
 	addDefaultEndpointMiddleware(logger, duration, mw)
+	// Add you endpoint middleware here
 
 	return
 }

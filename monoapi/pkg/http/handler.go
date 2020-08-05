@@ -4,12 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	http1 "net/http"
-
 	http "github.com/go-kit/kit/transport/http"
 	handlers "github.com/gorilla/handlers"
 	mux "github.com/gorilla/mux"
 	endpoint "github.com/viktormelnychuk/monoapi/monoapi/pkg/endpoint"
+	http1 "net/http"
 )
 
 // makeLoginHandler creates the handler logic
@@ -37,9 +36,34 @@ func encodeLoginResponse(ctx context.Context, w http1.ResponseWriter, response i
 	return
 }
 
+// makeSignUpHandler creates the handler logic
+func makeSignUpHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
+	m.Methods("POST").Path("/sign-up").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.SignUpEndpoint, decodeSignUpRequest, encodeSignUpResponse, options...)))
+}
+
+// decodeSignUpRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+func decodeSignUpRequest(_ context.Context, r *http1.Request) (interface{}, error) {
+	req := endpoint.SignUpRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+
+// encodeSignUpResponse is a transport/http.EncodeResponseFunc that encodes
+// the response as JSON to the response writer
+func encodeSignUpResponse(ctx context.Context, w http1.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}
+
 // makeGetAllTransactionsHandler creates the handler logic
 func makeGetAllTransactionsHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
-	m.Methods("GET").Path("/transactions").Handler(handlers.CORS(handlers.AllowedMethods([]string{"GET"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.GetAllTransactionsEndpoint, decodeGetAllTransactionsRequest, encodeGetAllTransactionsResponse, options...)))
+	m.Methods("POST").Path("/get-all-transactions").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.GetAllTransactionsEndpoint, decodeGetAllTransactionsRequest, encodeGetAllTransactionsResponse, options...)))
 }
 
 // decodeGetAllTransactionsRequest is a transport/http.DecodeRequestFunc that decodes a
@@ -64,7 +88,7 @@ func encodeGetAllTransactionsResponse(ctx context.Context, w http1.ResponseWrite
 
 // makeGetTransactionHandler creates the handler logic
 func makeGetTransactionHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
-	m.Methods("GET").Path("/transaction/:id").Handler(handlers.CORS(handlers.AllowedMethods([]string{"GET"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.GetTransactionEndpoint, decodeGetTransactionRequest, encodeGetTransactionResponse, options...)))
+	m.Methods("POST").Path("/get-transaction").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.GetTransactionEndpoint, decodeGetTransactionRequest, encodeGetTransactionResponse, options...)))
 }
 
 // decodeGetTransactionRequest is a transport/http.DecodeRequestFunc that decodes a
@@ -89,7 +113,7 @@ func encodeGetTransactionResponse(ctx context.Context, w http1.ResponseWriter, r
 
 // makeGetCardsHandler creates the handler logic
 func makeGetCardsHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
-	m.Methods("GET").Path("/cards").Handler(handlers.CORS(handlers.AllowedMethods([]string{"GET"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.GetCardsEndpoint, decodeGetCardsRequest, encodeGetCardsResponse, options...)))
+	m.Methods("POST").Path("/get-cards").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.GetCardsEndpoint, decodeGetCardsRequest, encodeGetCardsResponse, options...)))
 }
 
 // decodeGetCardsRequest is a transport/http.DecodeRequestFunc that decodes a
@@ -114,7 +138,7 @@ func encodeGetCardsResponse(ctx context.Context, w http1.ResponseWriter, respons
 
 // makeEnableCardHandler creates the handler logic
 func makeEnableCardHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
-	m.Methods("PUT").Path("/card").Handler(handlers.CORS(handlers.AllowedMethods([]string{"PUT"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.EnableCardEndpoint, decodeEnableCardRequest, encodeEnableCardResponse, options...)))
+	m.Methods("POST").Path("/enable-card").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.EnableCardEndpoint, decodeEnableCardRequest, encodeEnableCardResponse, options...)))
 }
 
 // decodeEnableCardRequest is a transport/http.DecodeRequestFunc that decodes a
