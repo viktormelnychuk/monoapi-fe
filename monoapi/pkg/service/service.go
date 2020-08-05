@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-
 	"github.com/viktormelnychuk/monoapi/monoapi/pkg/entiites"
 )
 

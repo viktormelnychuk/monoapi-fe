@@ -17,5 +17,6 @@ require (
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.7.1
+	go.uber.org/zap v1.13.0
 	sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0
 )

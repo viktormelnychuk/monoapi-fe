@@ -1,12 +1,15 @@
 package entiites
 
-import "github.com/golang/protobuf/ptypes/timestamp"
+import (
+	"fmt"
+	"github.com/golang/protobuf/ptypes/timestamp"
+)
 
 type Transaction struct {
 	ID       int
 	UserID   int
 	MonoInfo MonoTransaction
-	Card Card
+	Card     Card
 }
 
 type MonoTransaction struct {
@@ -24,13 +27,17 @@ type MonoTransaction struct {
 }
 
 type User struct {
-	ID        int
-	FirstName string
-	LastName  string
-	UserName  string
-	Password  string
-	MonoToken string
-	MonoUser MonoUser
+	ID        int    `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	UserName  string `json:"username"`
+	Password  string `json:"password"`
+	MonoToken string `json:"mono_token"`
+	MonoUser  MonoUser
+}
+
+func (u *User) String() string {
+	return fmt.Sprintf("username: %s, first_name: %s, last_name: %s", u.UserName, u.FirstName, u.LastName)
 }
 
 type MonoUser struct {
@@ -40,8 +47,8 @@ type MonoUser struct {
 }
 
 type Card struct {
-	ID int
-	UserID int
+	ID      int
+	UserID  int
 	Tracked bool
 }
 

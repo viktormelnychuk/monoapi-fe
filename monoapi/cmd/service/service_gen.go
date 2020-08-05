@@ -3,15 +3,14 @@ package service
 
 import (
 	endpoint1 "github.com/go-kit/kit/endpoint"
-	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
-	opentracing "github.com/go-kit/kit/tracing/opentracing"
 	http "github.com/go-kit/kit/transport/http"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
 	endpoint "github.com/viktormelnychuk/monoapi/monoapi/pkg/endpoint"
 	http1 "github.com/viktormelnychuk/monoapi/monoapi/pkg/http"
 	service "github.com/viktormelnychuk/monoapi/monoapi/pkg/service"
+	"go.uber.org/zap"
 )
 
 func createService(endpoints endpoint.Endpoints) (g *group.Group) {
@@ -19,26 +18,27 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 	initHttpHandler(endpoints, g)
 	return g
 }
-func defaultHttpOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]http.ServerOption {
+func defaultHttpOptions(logger *zap.SugaredLogger, tracer opentracinggo.Tracer) map[string][]http.ServerOption {
+
 	options := map[string][]http.ServerOption{
-		"EnableCard":         {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "EnableCard", logger))},
-		"GetAllTransactions": {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "GetAllTransactions", logger))},
-		"GetCards":           {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "GetCards", logger))},
-		"GetTransaction":     {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "GetTransaction", logger))},
-		"Login":              {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Login", logger))},
-		"SignUp":             {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "SignUp", logger))},
+		"EnableCard":         {http.ServerErrorEncoder(http1.ErrorEncoder)},
+		"GetAllTransactions": {http.ServerErrorEncoder(http1.ErrorEncoder)},
+		"GetCards":           {http.ServerErrorEncoder(http1.ErrorEncoder)},
+		"GetTransaction":     {http.ServerErrorEncoder(http1.ErrorEncoder)},
+		"Login":              {http.ServerErrorEncoder(http1.ErrorEncoder)},
+		"SignUp":             {http.ServerErrorEncoder(http1.ErrorEncoder)},
 	}
 	return options
 }
-func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
-	mw["Login"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Login")), endpoint.InstrumentingMiddleware(duration.With("method", "Login"))}
-	mw["SignUp"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SignUp")), endpoint.InstrumentingMiddleware(duration.With("method", "SignUp"))}
-	mw["GetAllTransactions"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetAllTransactions")), endpoint.InstrumentingMiddleware(duration.With("method", "GetAllTransactions"))}
-	mw["GetTransaction"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetTransaction")), endpoint.InstrumentingMiddleware(duration.With("method", "GetTransaction"))}
-	mw["GetCards"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetCards")), endpoint.InstrumentingMiddleware(duration.With("method", "GetCards"))}
-	mw["EnableCard"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "EnableCard")), endpoint.InstrumentingMiddleware(duration.With("method", "EnableCard"))}
+func addDefaultEndpointMiddleware(logger *zap.SugaredLogger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
+	mw["Login"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(logger.Named("Login::")), endpoint.InstrumentingMiddleware(duration.With("method", "Login"))}
+	mw["SignUp"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(logger.Named("SignUp::")), endpoint.InstrumentingMiddleware(duration.With("method", "SignUp"))}
+	mw["GetAllTransactions"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(logger.Named("GetAllTransactions::")), endpoint.InstrumentingMiddleware(duration.With("method", "GetAllTransactions"))}
+	mw["GetTransaction"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(logger.Named("GetTransaction::")), endpoint.InstrumentingMiddleware(duration.With("method", "GetTransaction"))}
+	mw["GetCards"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(logger.Named("GetCards::")), endpoint.InstrumentingMiddleware(duration.With("method", "GetCards"))}
+	mw["EnableCard"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(logger.Named("EnableCard::")), endpoint.InstrumentingMiddleware(duration.With("method", "EnableCard"))}
 }
-func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
+func addDefaultServiceMiddleware(logger *zap.SugaredLogger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {

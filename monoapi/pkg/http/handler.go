@@ -38,7 +38,7 @@ func encodeLoginResponse(ctx context.Context, w http1.ResponseWriter, response i
 
 // makeSignUpHandler creates the handler logic
 func makeSignUpHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
-	m.Methods("POST").Path("/sign-up").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.SignUpEndpoint, decodeSignUpRequest, encodeSignUpResponse, options...)))
+	m.Methods("POST").Path("/signup").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.SignUpEndpoint, decodeSignUpRequest, encodeSignUpResponse, options...)))
 }
 
 // decodeSignUpRequest is a transport/http.DecodeRequestFunc that decodes a
