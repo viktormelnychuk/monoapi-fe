@@ -1,0 +1,12 @@
+version: "2"
+services:
+  monoapi:
+    build:
+      context: .
+      dockerfile: monoapi/Dockerfile
+    restart: always
+    volumes:
+    - .:/go/src/github.com/viktormelnychuk/monoapi
+    container_name: monoapi
+    ports:
+    - 8800:8081

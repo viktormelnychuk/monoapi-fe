@@ -11,6 +11,7 @@ import (
 // single parameter.
 type Endpoints struct {
 	LoginEndpoint              endpoint.Endpoint
+	SignUpEndpoint             endpoint.Endpoint
 	GetAllTransactionsEndpoint endpoint.Endpoint
 	GetTransactionEndpoint     endpoint.Endpoint
 	GetCardsEndpoint           endpoint.Endpoint
@@ -26,9 +27,13 @@ func New(s service.MonoapiService, mdw map[string][]endpoint.Middleware) Endpoin
 		GetCardsEndpoint:           MakeGetCardsEndpoint(s),
 		GetTransactionEndpoint:     MakeGetTransactionEndpoint(s),
 		LoginEndpoint:              MakeLoginEndpoint(s),
+		SignUpEndpoint:             MakeSignUpEndpoint(s),
 	}
 	for _, m := range mdw["Login"] {
 		eps.LoginEndpoint = m(eps.LoginEndpoint)
+	}
+	for _, m := range mdw["SignUp"] {
+		eps.SignUpEndpoint = m(eps.SignUpEndpoint)
 	}
 	for _, m := range mdw["GetAllTransactions"] {
 		eps.GetAllTransactionsEndpoint = m(eps.GetAllTransactionsEndpoint)

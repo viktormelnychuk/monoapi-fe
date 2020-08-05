@@ -11,6 +11,7 @@ type MonoapiService interface {
 	// Add your methods here
 	// e.x: Foo(ctx context.Context,s string)(rs string, err error)
 	Login(ctx context.Context, username, password string) (string, error)
+	SignUp(ctx context.Context, user entiites.User) error
 	GetAllTransactions(ctx context.Context) ([]entiites.Transaction, error)
 	GetTransaction(ctx context.Context, ID int) (entiites.Transaction, error)
 	GetCards(ctx context.Context) ([]entiites.Card, error)
@@ -19,9 +20,13 @@ type MonoapiService interface {
 
 type basicMonoapiService struct{}
 
-func (b *basicMonoapiService) Login(ctx context.Context, username string, password string) (string, error) {
+func (b *basicMonoapiService) Login(ctx context.Context, username string, password string) (s0 string, e1 error) {
 	// TODO implement the business logic of Login
-	return "e0",nil
+	return s0, e1
+}
+func (b *basicMonoapiService) SignUp(ctx context.Context, user entiites.User) (e0 error) {
+	// TODO implement the business logic of SignUp
+	return e0
 }
 func (b *basicMonoapiService) GetAllTransactions(ctx context.Context) (e0 []entiites.Transaction, e1 error) {
 	// TODO implement the business logic of GetAllTransactions

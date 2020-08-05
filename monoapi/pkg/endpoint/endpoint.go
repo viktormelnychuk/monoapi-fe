@@ -2,7 +2,6 @@ package endpoint
 
 import (
 	"context"
-
 	endpoint "github.com/go-kit/kit/endpoint"
 	entiites "github.com/viktormelnychuk/monoapi/monoapi/pkg/entiites"
 	service "github.com/viktormelnychuk/monoapi/monoapi/pkg/service"
@@ -16,25 +15,49 @@ type LoginRequest struct {
 
 // LoginResponse collects the response parameters for the Login method.
 type LoginResponse struct {
-	Error error  `json:"e0"`
-	Token string `json:"token"`
+	S0 string `json:"s0"`
+	E1 error  `json:"e1"`
 }
 
 // MakeLoginEndpoint returns an endpoint that invokes Login on the service.
 func MakeLoginEndpoint(s service.MonoapiService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(LoginRequest)
-		token, err := s.Login(ctx, req.Username, req.Password)
+		s0, e1 := s.Login(ctx, req.Username, req.Password)
 		return LoginResponse{
-			Error: err,
-			Token: token,
+			E1: e1,
+			S0: s0,
 		}, nil
 	}
 }
 
 // Failed implements Failer.
 func (r LoginResponse) Failed() error {
-	return r.Error
+	return r.E1
+}
+
+// SignUpRequest collects the request parameters for the SignUp method.
+type SignUpRequest struct {
+	User entiites.User `json:"user"`
+}
+
+// SignUpResponse collects the response parameters for the SignUp method.
+type SignUpResponse struct {
+	E0 error `json:"e0"`
+}
+
+// MakeSignUpEndpoint returns an endpoint that invokes SignUp on the service.
+func MakeSignUpEndpoint(s service.MonoapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(SignUpRequest)
+		e0 := s.SignUp(ctx, req.User)
+		return SignUpResponse{E0: e0}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r SignUpResponse) Failed() error {
+	return r.E0
 }
 
 // GetAllTransactionsRequest collects the request parameters for the GetAllTransactions method.
@@ -148,7 +171,7 @@ type Failure interface {
 }
 
 // Login implements Service. Primarily useful in a client.
-func (e Endpoints) Login(ctx context.Context, username string, password string) (token string, err error) {
+func (e Endpoints) Login(ctx context.Context, username string, password string) (s0 string, e1 error) {
 	request := LoginRequest{
 		Password: password,
 		Username: username,
@@ -157,7 +180,17 @@ func (e Endpoints) Login(ctx context.Context, username string, password string) 
 	if err != nil {
 		return
 	}
-	return response.(LoginResponse).Token, response.(LoginResponse).Error
+	return response.(LoginResponse).S0, response.(LoginResponse).E1
+}
+
+// SignUp implements Service. Primarily useful in a client.
+func (e Endpoints) SignUp(ctx context.Context, user entiites.User) (e0 error) {
+	request := SignUpRequest{User: user}
+	response, err := e.SignUpEndpoint(ctx, request)
+	if err != nil {
+		return
+	}
+	return response.(SignUpResponse).E0
 }
 
 // GetAllTransactions implements Service. Primarily useful in a client.

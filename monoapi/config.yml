@@ -1,0 +1,15 @@
+Common:
+  Name: monoapi
+  Env: local
+  Server:
+    HTTP:
+      Port: 8080
+    GRPC:
+      Port: 9002
+DB:
+  Postgres:
+    Host: localhost
+    Port: 5432
+    Database: monoapi
+    User: postgres
+    Password: 1234
